@@ -13,28 +13,28 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="50dp"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btn_select_image"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Select Image" />
 
             <Button
                 android:id="@+id/btn_encrypt"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Encrypt" />
 
             <Button
                 android:id="@+id/btn_decrypt"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Decrypt" />
         </LinearLayout>
 
@@ -44,25 +44,44 @@
             android:layout_height="wrap_content"
             android:text="Original Image:"
             android:layout_marginTop="16dp" />
-        <ImageView
-            android:id="@+id/iv_original"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:scaleType="centerCrop"
-            android:background="#eeeeee" />
 
         <!-- Display processed image -->
+        <ImageView
+            android:id="@+id/iv_original"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:background="#eeeeee"
+            android:scaleType="centerCrop" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Watermarked Image:"
+            android:text="@string/watermarked_image"
             android:layout_marginTop="16dp" />
+
         <ImageView
             android:id="@+id/iv_processed"
-            android:layout_width="match_parent"
+            android:layout_width="300dp"
             android:layout_height="300dp"
-            android:scaleType="centerCrop"
-            android:background="#eeeeee" />
+            android:background="#eeeeee"
+            android:contentDescription="@string/watermarked_image_description"
+            android:scaleType="centerCrop" />
+
+        <!-- Display processed residual image -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/residual_image"
+            android:layout_marginTop="16dp" />
+
+        <ImageView
+            android:id="@+id/iv_processed_residual"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:background="#eeeeee"
+            android:contentDescription="@string/residual_image"
+            android:scaleType="centerCrop" />
 
         <!-- Display extracted watermark information -->
         <TextView

@@ -20,11 +20,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var decryptButton: Button
     private lateinit var originalImageView: ImageView
     private lateinit var processedImageView: ImageView
+    private lateinit var resisualImageView: ImageView
     // 用于显示最终解码出的水印信息
     private lateinit var watermarkDisplayTextView: TextView
 
     private var selectedBitmap: Bitmap? = null
     private var processedBitmap: Bitmap? = null
+    private var processedResidual: Bitmap? = null
 
     private lateinit var watermarkProcessor: WatermarkProcessor
 
@@ -51,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         decryptButton = findViewById(R.id.btn_decrypt)
         originalImageView = findViewById(R.id.iv_original)
         processedImageView = findViewById(R.id.iv_processed)
+        resisualImageView = findViewById(R.id.iv_processed_residual)
         watermarkDisplayTextView = findViewById(R.id.tv_decode_result)
 
         selectImageButton.setOnClickListener {
@@ -62,6 +65,13 @@ class MainActivity : AppCompatActivity() {
             val bitmap = selectedBitmap
             if (bitmap != null) {
                 // 使用 Encoder 模型进行加密，注意：Encoder.forward 只需要传入图像张量
+                processedResidual = watermarkProcessor.encryptResidual(bitmap)
+                processedResidual?.let { residual ->
+                    // 在 ImageView 中显示加密后的残差图像
+                    resisualImageView.setImageBitmap(residual)
+                    // 保存水印图像（可选）
+                    watermarkProcessor.saveBitmapToGallery(this, residual, "residual_${System.currentTimeMillis()}.png")
+                }
                 processedBitmap = watermarkProcessor.encryptImage(bitmap)
                 processedBitmap?.let { watermarked ->
                     // 在 ImageView 中显示水印图像
@@ -78,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 
         // 如果你希望单独触发解码，则使用解码按钮
         decryptButton.setOnClickListener {
-            val bitmap = processedBitmap
+            val bitmap = selectedBitmap
             if (bitmap != null) {
                 val extractedWatermark = watermarkProcessor.decryptImage(bitmap)
                 watermarkDisplayTextView.text = "Extracted watermark: $extractedWatermark"

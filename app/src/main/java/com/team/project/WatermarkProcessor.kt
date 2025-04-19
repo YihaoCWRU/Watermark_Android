@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.Color
 import android.util.Log
-import androidx.xr.runtime.math.clamp
+import org.pytorch.Device
 import org.pytorch.IValue
 import org.pytorch.Module
 import org.pytorch.Tensor
@@ -26,8 +26,8 @@ class WatermarkProcessor(private val context: Context) {
     init {
         try {
             // Load encoder and detector models (converted to .pt)
-            moduleEnc = Module.load(assetFilePath("encoder.pt"))
-            moduleDec = Module.load(assetFilePath("detector.pt"))
+            moduleEnc = Module.load(assetFilePath("model_en.pt"))
+            moduleDec = Module.load(assetFilePath("model_de.pt"))
         } catch (e: Exception) {
             Log.e("WatermarkProcessor", "Failed to load models", e)
         }
@@ -35,6 +35,20 @@ class WatermarkProcessor(private val context: Context) {
 
 // WatermarkProcessor.kt
 
+
+    fun encryptResidual(bitmap: Bitmap): Bitmap? {
+        try {
+            // Convert Bitmap to tensor, normalized to [0, 1]
+            val inputTensor = bitmapToFloatTensor(bitmap)
+            // Get residual from encoder with single input (DeepRaft encoder)
+            val residualTensor = moduleEnc?.forward(IValue.from(inputTensor))?.toTensor() ?: return null
+
+            return tensorToBitmap(residualTensor)
+        } catch (e: Exception) {
+            Log.e("WatermarkProcessor", "Encryption failed", e)
+            return null
+        }
+    }
 
     fun encryptImage(bitmap: Bitmap): Bitmap? {
         try {
@@ -44,6 +58,7 @@ class WatermarkProcessor(private val context: Context) {
             val residualTensor = moduleEnc?.forward(IValue.from(inputTensor))?.toTensor() ?: return null
             // Generate watermarked image by adding residual to cover image and then clamping to [0, 1]
             val watermarkedTensor = (inputTensor + residualTensor).clamp(0f, 1f)
+
             return tensorToBitmap(watermarkedTensor)
         } catch (e: Exception) {
             Log.e("WatermarkProcessor", "Encryption failed", e)
@@ -85,7 +100,7 @@ class WatermarkProcessor(private val context: Context) {
             }
             // Interpret the two values as probabilities.
             // For example, if outputArray[1] > outputArray[0], we can say that the watermark is detected.
-            return if (outputArray[1] > outputArray[0]) "Watermark Detected" else "Watermark Not Detected"
+            return if (outputArray[0] > outputArray[1]) "Watermark Detected" else "Watermark Not Detected"
         } catch (e: Exception) {
             Log.e("WatermarkProcessor", "Decryption failed", e)
             return "Decryption error"
@@ -156,7 +171,7 @@ class WatermarkProcessor(private val context: Context) {
     // Save a Bitmap to local storage (simple implementation: save to app private storage)
     fun saveBitmapToGallery(context: Context, bitmap: Bitmap, fileName: String) {
         try {
-            val file = File(context.filesDir, fileName)
+            val file = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), fileName)
             FileOutputStream(file).use { fos ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
                 fos.flush()
